@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uncertainty-classifier"
+version = "0.1.0"
+description = "Uncertainty-aware text classifier with conformal prediction, MC dropout, and calibration curves"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "vvvaibhaverma-123459876" }]
+keywords = ["nlp", "uncertainty", "conformal-prediction", "mc-dropout", "calibration", "bert"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0",
+    "transformers>=4.35",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "fastapi>=0.104",
+    "uvicorn[standard]>=0.24",
+    "pydantic>=2.0",
+    "datasets>=2.14",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-asyncio>=0.21",
+    "httpx>=0.25",
+    "matplotlib>=3.7",
+]
+
+[project.scripts]
+uncertainty-classifier = "uncertainty_classifier.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["uncertainty_classifier*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"

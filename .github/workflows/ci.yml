@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}-${{ matrix.python-version }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install CPU-only dependencies
+        run: |
+          pip install --upgrade pip
+          # Install CPU-only PyTorch to avoid large GPU wheel downloads in CI
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install transformers>=4.35 numpy>=1.24 scipy>=1.10
+          pip install fastapi>=0.104 "uvicorn[standard]>=0.24" pydantic>=2.0
+          pip install pytest>=7.4 httpx>=0.25
+
+      - name: Install package
+        run: pip install -e . --no-deps
+
+      - name: Run tests
+        # HF_DATASETS_OFFLINE prevents any dataset downloads; TRANSFORMERS_OFFLINE
+        # prevents model downloads — tests must use random weights only.
+        env:
+          TRANSFORMERS_OFFLINE: "1"
+          HF_DATASETS_OFFLINE: "1"
+        run: python -m pytest tests/ -q --tb=short
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint
+        run: ruff check uncertainty_classifier/ tests/ --ignore E501,E402
