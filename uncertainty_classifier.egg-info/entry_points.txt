@@ -1,2 +1,0 @@
-[console_scripts]
-uncertainty-classifier = uncertainty_classifier.cli:main
